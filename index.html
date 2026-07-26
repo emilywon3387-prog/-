@@ -3,41 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sound Engineer Portfolio</title>
+    <title>SoundCheck | 공연장 음향 자동 진단 시스템</title>
     <style>
-        body { background-color: #0e1111; color: #ffffff; font-family: sans-serif; line-height: 1.6; padding: 40px; }
-        header { text-align: center; border-bottom: 2px solid #00ffcc; padding-bottom: 20px; margin-bottom: 40px; }
-        h1 { color: #00ffcc; }
-        section { background: #1a1a1a; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #00ffcc; }
-        h2 { color: #00ffcc; }
-        .wave-box { display: flex; align-items: flex-end; height: 50px; gap: 3px; margin-top: 15px; }
-        .bar { flex: 1; background: #00ffcc; height: 20%; animation: move 1s infinite alternate; }
-        @keyframes move { from { height: 20%; } to { height: 100%; } }
-        .bar:nth-child(2n) { animation-duration: 0.7s; }
-        .bar:nth-child(3n) { animation-duration: 1.2s; }
+        :root { --main: #00ffcc; --bg: #0d1117; --card: #161b22; --border: #30363d; }
+        body { background: var(--bg); color: #c9d1d9; font-family: 'Pretendard', sans-serif; margin: 0; padding: 30px 15px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; }
+        h1 { color: var(--main); margin: 0; font-size: 2.2rem; }
+        .subtitle { color: #8b949e; font-size: 0.95rem; margin-top: 5px; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        h2 { color: #fff; font-size: 1.2rem; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+        
+        label { display: block; font-size: 0.85rem; color: #8b949e; margin: 10px 0 4px; }
+        input, select { width: 100%; padding: 10px; background: #0d1117; border: 1px solid var(--border); color: #fff; border-radius: 6px; box-sizing: border-box; }
+        
+        button { width: 100%; background: var(--main); color: #000; font-weight: bold; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #00cca3; }
+
+        .result-box { display: none; background: #1f242d; border: 2px solid var(--main); }
+        .stat { font-size: 1.8rem; font-weight: bold; color: var(--main); margin: 10px 0; }
+        .badge { display: inline-block; padding: 4px 8px; background: #30363d; border-radius: 4px; font-size: 0.85rem; color: #fff; }
+        ul { padding-left: 20px; margin: 10px 0; }
     </style>
 </head>
 <body>
+
+<div class="container">
     <header>
-        <h1>SOUND ENGINEER PORTFOLIO</h1>
-        <p>물리학과 디지털 기술로 소리를 설계하다</p>
+        <h1>🎵 SoundCheck Solution</h1>
+        <p class="subtitle">공연장·강당·교회 공간 음향 자동 진단 및 EQ 추천 솔루션</p>
     </header>
-    <section>
-        <h2>01. 연구 주제: 주파수 응답 특성 분석</h2>
-        <p>단순한 청취를 넘어 주파수 대역별 특성을 이해하고자 함. 특히 250Hz 이하의 저역대 마스킹 효과를 제어하여 음원의 명료도를 확보하는 이퀄라이징 과정을 시뮬레이션함. 웹페이지의 움직이는 파형은 소리의 에너지를 시각화한 것임.</p>
-        <div class="wave-box">
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+
+    <div class="card">
+        <h2>1. 공간 치수 및 환경 입력</h2>
+        <div class="grid">
+            <div>
+                <label>가로 길이 (m)</label>
+                <input type="number" id="width" value="12">
+            </div>
+            <div>
+                <label>세로 길이 (m)</label>
+                <input type="number" id="length" value="15">
+            </div>
         </div>
-    </section>
-    <section>
-        <h2>02. 디지털 오디오 원리 (ADC/DAC)</h2>
-        <p>아날로그 파동을 디지털로 변환하는 Nyquist-Shannon 샘플링 정리를 학습함. $44.1kHz$ 샘플링 레이트와 24비트 뎁스가 음질에 미치는 물리적 영향을 분석하고, 이를 데이터 구조로 표현하는 과정을 탐구함."</p>
-    </section>
-    <section>
-        <h2>03. 진로 목표 및 활동</h2>
-        <p>미래의 음향 엔지니어로서 공간 음향(Spatial Audio) 기술과 인공지능 기반의 노이즈 제거 기술에 관심이 많음. 기술과 예술의 접점에서 사용자에게 최상의 청각 경험을 선사하는 엔지니어를 꿈꿈."</p>
-    </section>
-    <div style="text-align:center; color:#666;">&copy; 2024 Sound Engineer Portfolio Project.</div>
+        <div>
+            <label>천장 높이 (m)</label>
+            <input type="number" id="height" value="5">
+        </div>
+
+        <h2 style="margin-top: 20px;">2. 마감재 & 관객 설정</h2>
+        <div class="grid">
+            <div>
+                <label>벽면 재질</label>
+                <select id="wall">
+                    <option value="0.03">콘크리트/유리 (흡음 낮음)</option>
+                    <option value="0.06" selected>석고보드 (일반)</option>
+                    <option value="0.30">흡음 패널 설치 (흡음 높음)</option>
+                </select>
+            </div>
+            <div>
+                <label>바닥 재질</label>
+                <select id="floor">
+                    <option value="0.02">데코타일/마루</option>
+                    <option value="0.15" selected>카펫 바닥</option>
+                </select>
+            </div>
+        </div>
+        <div>
+            <label>예상 관객 수 (명)</label>
+            <input type="number" id="audience" value="100">
+        </div>
+
+        <button onclick="diagnose()">⚡ 음향 환경 진단하기</button>
+    </div>
+
+    <div id="result" class="card result-box">
+        <h2>📊 SoundCheck 진단 리포트</h2>
+        
+        <div>예상 잔향시간 (RT60)</div>
+        <div class="stat" id="rt60-val">0.0초</div>
+
+        <div style="margin-top: 15px;">
+            <strong>용도별 적합도 평가:</strong>
+            <p>• 음악 공연: <span id="rating-music" class="badge"></span></p>
+            <p>• 강연 / 예배: <span id="rating-speech" class="badge"></span></p>
+        </div>
+
+        <h3 style="color:var(--main); margin-top:20px;">🛠️ 추천 음향 튜닝 (EQ & 흡음)</h3>
+        <ul id="recommendations"></ul>
+    </div>
+</div>
+
+<script>
+function diagnose() {
+    const w = parseFloat(document.getElementById('width').value);
+    const l = parseFloat(document.getElementById('length').value);
+    const h = parseFloat(document.getElementById('height').value);
+    
+    const aWall = parseFloat(document.getElementById('wall').value);
+    const aFloor = parseFloat(document.getElementById('floor').value);
+    const audience = parseInt(document.getElementById('audience').value);
+
+    const V = w * l * h;
+    const sFloorCeil = w * l * 2;
+    const sWalls = (w * h * 2) + (l * h * 2);
+    
+    const totalAbsorption = (sWalls * aWall) + (sFloorCeil * aFloor) + (audience * 0.4);
+    
+    let rt60 = (0.161 * V) / totalAbsorption;
+    rt60 = Math.max(0.3, rt60).toFixed(2);
+
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('rt60-val').innerText = rt60 + ' 초';
+
+    const recList = document.getElementById('recommendations');
+    recList.innerHTML = '';
+
+    if(rt60 > 1.8) {
+        document.getElementById('rating-music').innerText = "★★★★☆ (웅장함)";
+        document.getElementById('rating-speech').innerText = "★☆☆☆☆ (울림 심함)";
+        recList.innerHTML += "<li><strong>흡음 보정:</strong> 울림이 매우 심합니다. 벽면에 추가 흡음패널 설치가 시급합니다.</li>";
+        recList.innerHTML += "<li><strong>추천 EQ:</strong> Low-cut 80Hz 적용, 저음역대(125Hz~250Hz) -4dB 감쇄 필요.</li>";
+    } else if(rt60 >= 1.0 && rt60 <= 1.8) {
+        document.getElementById('rating-music').innerText = "★★★★★ (최적)";
+        document.getElementById('rating-speech').innerText = "★★★☆☆ (양호)";
+        recList.innerHTML += "<li><strong>음향 환경:</strong> 공연용으로 매우 완벽한 잔향을 제공합니다.</li>";
+        recList.innerHTML += "<li><strong>추천 EQ:</strong> 명료도를 위해 2kHz~4kHz 대역 +2dB 칠트 보정.</li>";
+    } else {
+        document.getElementById('rating-music').innerText = "★★☆☆☆ (건조함)";
+        document.getElementById('rating-speech').innerText = "★★★★★ (명료함)";
+        recList.innerHTML += "<li><strong>음향 환경:</strong> 소리가 족족 흡수되어 명료하지만 라이브 연주에는 건조할 수 있습니다.</li>";
+        recList.innerHTML += "<li><strong>추천 EQ:</strong> 리버브(잔향) 효과를 믹서에서 15% 정도 추가 권장.</li>";
+    }
+}
+</script>
+
 </body>
 </html>

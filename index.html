@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoundCheck | 공연장 음향 자동 진단 시스템</title>
+    <title>SoundCheck Pro | AI 공간 음향 진단 솔루션</title>
     <style>
         :root { --main: #00ffcc; --bg: #0d1117; --card: #161b22; --border: #30363d; }
-        body { background: var(--bg); color: #c9d1d9; font-family: 'Pretendard', sans-serif; margin: 0; padding: 30px 15px; }
+        body { background: var(--bg); color: #c9d1d9; font-family: 'Pretendard', sans-serif; margin: 0; padding: 30px 15px; line-height: 1.6; }
         .container { max-width: 800px; margin: 0 auto; }
         header { text-align: center; margin-bottom: 30px; }
         h1 { color: var(--main); margin: 0; font-size: 2.2rem; }
@@ -23,8 +23,11 @@
         button:hover { background: #00cca3; }
 
         .result-box { display: none; background: #1f242d; border: 2px solid var(--main); }
-        .stat { font-size: 1.8rem; font-weight: bold; color: var(--main); margin: 10px 0; }
-        .badge { display: inline-block; padding: 4px 8px; background: #30363d; border-radius: 4px; font-size: 0.85rem; color: #fff; }
+        .score-box { display: flex; justify-content: space-between; text-align: center; background: #0d1117; padding: 15px; border-radius: 8px; margin: 15px 0; }
+        .score-item { flex: 1; }
+        .score-num { font-size: 1.8rem; font-weight: bold; color: var(--main); }
+        
+        .ai-box { background: rgba(0, 255, 204, 0.05); border-left: 4px solid var(--main); padding: 15px; border-radius: 4px; margin-top: 15px; }
         ul { padding-left: 20px; margin: 10px 0; }
     </style>
 </head>
@@ -32,8 +35,8 @@
 
 <div class="container">
     <header>
-        <h1>🎵 SoundCheck Solution</h1>
-        <p class="subtitle">공연장·강당·교회 공간 음향 자동 진단 및 EQ 추천 솔루션</p>
+        <h1>🎵 SoundCheck Pro</h1>
+        <p class="subtitle">AI 기반 공간 음향 진단 & 튜닝 컨설팅 솔루션</p>
     </header>
 
     <div class="card">
@@ -58,9 +61,9 @@
             <div>
                 <label>벽면 재질</label>
                 <select id="wall">
-                    <option value="0.03">콘크리트/유리 (흡음 낮음)</option>
+                    <option value="0.03">콘크리트/유리 (흡음률 낮음)</option>
                     <option value="0.06" selected>석고보드 (일반)</option>
-                    <option value="0.30">흡음 패널 설치 (흡음 높음)</option>
+                    <option value="0.30">흡음 패널 설치 (흡음률 높음)</option>
                 </select>
             </div>
             <div>
@@ -76,22 +79,33 @@
             <input type="number" id="audience" value="100">
         </div>
 
-        <button onclick="diagnose()">⚡ 음향 환경 진단하기</button>
+        <button onclick="diagnose()">⚡ AI 음향 진단 및 리포트 생성</button>
     </div>
 
     <div id="result" class="card result-box">
-        <h2>📊 SoundCheck 진단 리포트</h2>
+        <h2>📊 AI SoundCheck 진단 리포트</h2>
         
-        <div>예상 잔향시간 (RT60)</div>
-        <div class="stat" id="rt60-val">0.0초</div>
-
-        <div style="margin-top: 15px;">
-            <strong>용도별 적합도 평가:</strong>
-            <p>• 음악 공연: <span id="rating-music" class="badge"></span></p>
-            <p>• 강연 / 예배: <span id="rating-speech" class="badge"></span></p>
+        <div class="score-box">
+            <div class="score-item">
+                <div style="font-size:0.8rem; color:#888;">잔향시간 (RT60)</div>
+                <div class="score-num" id="rt60-val">0.0초</div>
+            </div>
+            <div class="score-item">
+                <div style="font-size:0.8rem; color:#888;">음악 공연 점수</div>
+                <div class="score-num" id="score-music">0점</div>
+            </div>
+            <div class="score-item">
+                <div style="font-size:0.8rem; color:#888;">강연/명료도 점수</div>
+                <div class="score-num" id="score-speech">0점</div>
+            </div>
         </div>
 
-        <h3 style="color:var(--main); margin-top:20px;">🛠️ 추천 음향 튜닝 (EQ & 흡음)</h3>
+        <div class="ai-box">
+            <h3 style="color:var(--main); margin:0 0 8px 0; font-size:1.05rem;">🤖 AI 음향 컨설턴트 종합 분석</h3>
+            <p id="ai-opinion" style="margin:0; font-size:0.95rem; color:#e1e1e6;"></p>
+        </div>
+
+        <h3 style="color:var(--main); margin-top:20px;">🛠️ 전문가 솔루션 (EQ & 흡음 개선안)</h3>
         <ul id="recommendations"></ul>
     </div>
 </div>
@@ -116,27 +130,32 @@ function diagnose() {
     rt60 = Math.max(0.3, rt60).toFixed(2);
 
     document.getElementById('result').style.display = 'block';
-    document.getElementById('rt60-val').innerText = rt60 + ' 초';
+    document.getElementById('rt60-val').innerText = rt60 + '초';
 
-    const recList = document.getElementById('recommendations');
-    recList.innerHTML = '';
+    let mScore, sScore, opinion, recs = "";
 
+    // RT60 값에 따른 상세 분석 알고리즘
     if(rt60 > 1.8) {
-        document.getElementById('rating-music').innerText = "★★★★☆ (웅장함)";
-        document.getElementById('rating-speech').innerText = "★☆☆☆☆ (울림 심함)";
-        recList.innerHTML += "<li><strong>흡음 보정:</strong> 울림이 매우 심합니다. 벽면에 추가 흡음패널 설치가 시급합니다.</li>";
-        recList.innerHTML += "<li><strong>추천 EQ:</strong> Low-cut 80Hz 적용, 저음역대(125Hz~250Hz) -4dB 감쇄 필요.</li>";
+        mScore = "88점"; sScore = "42점";
+        opinion = `현재 공간은 잔향시간이 ${rt60}초로 매우 길고 웅장하여 음악 연주에는 유효하나, 소리의 울림이 심해 강연이나 예배 시 음절 전달력(명료도)이 크게 떨어집니다. 벽면의 낮은 흡음계수로 인해 음파가 반사되며 마스킹 현상이 발생하고 있습니다.`;
+        recs += "<li><strong>흡음 개선안:</strong> 명료도 확보를 위해 후면 벽에 최소 50mm 두께의 흡음 패널 6~8장 추가 설치 추천.</li>";
+        recs += "<li><strong>추천 EQ 튜닝:</strong> 저음역대 부밍 현상 방지를 위해 80Hz High-pass Filter 적용 및 200Hz 대역 -3dB 감쇄.</li>";
     } else if(rt60 >= 1.0 && rt60 <= 1.8) {
-        document.getElementById('rating-music').innerText = "★★★★★ (최적)";
-        document.getElementById('rating-speech').innerText = "★★★☆☆ (양호)";
-        recList.innerHTML += "<li><strong>음향 환경:</strong> 공연용으로 매우 완벽한 잔향을 제공합니다.</li>";
-        recList.innerHTML += "<li><strong>추천 EQ:</strong> 명료도를 위해 2kHz~4kHz 대역 +2dB 칠트 보정.</li>";
+        mScore = "96점"; sScore = "85점";
+        opinion = `현재 공간의 잔향시간은 ${rt60}초로, 음악 공연과 일반 강연 모두를 완벽하게 소화할 수 있는 이상적인 음향 밸런스를 갖추고 있습니다. 적절한 잔향이 소리에 풍부함과 명료함을 동시에 제공합니다.`;
+        recs += "<li><strong>공간 음향 유지:</strong> 현재 마감재 비율이 완벽하므로 추가 흡음재는 불필요합니다.</li>";
+        recs += "<li><strong>추천 EQ 튜닝:</strong> 보컬의 선명도를 한층 더 높이기 위해 3kHz 대역을 +2dB 부스트 추천.</li>";
     } else {
-        document.getElementById('rating-music').innerText = "★★☆☆☆ (건조함)";
-        document.getElementById('rating-speech').innerText = "★★★★★ (명료함)";
-        recList.innerHTML += "<li><strong>음향 환경:</strong> 소리가 족족 흡수되어 명료하지만 라이브 연주에는 건조할 수 있습니다.</li>";
-        recList.innerHTML += "<li><strong>추천 EQ:</strong> 리버브(잔향) 효과를 믹서에서 15% 정도 추가 권장.</li>";
+        mScore = "60점"; sScore = "95점";
+        opinion = `현재 공간은 잔향시간이 ${rt60}초로 매우 짧고 건조(Dead)합니다. 말소리는 매우 명확하게 전달되지만, 라이브 음악 연주 시 소리가 얇고 답답하게 들릴 수 있습니다. 소리가 벽체에 과도하게 흡수되는 상태입니다.`;
+        recs += "<li><strong>음향 개선안:</strong> 반사판(Diffuser)을 설치하여 소리의 잔향감을 자연스럽게 확산시킬 필요가 있음.</li>";
+        recs += "<li><strong>추천 EQ 튜닝:</strong> 건조한 음색을 보완하기 위해 믹스 콘솔에서 디지털 리버브(Reverb)를 10~15% 추가 가공.</li>";
     }
+
+    document.getElementById('score-music').innerText = mScore;
+    document.getElementById('score-speech').innerText = sScore;
+    document.getElementById('ai-opinion').innerText = opinion;
+    document.getElementById('recommendations').innerHTML = recs;
 }
 </script>
 
